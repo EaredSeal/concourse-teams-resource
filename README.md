@@ -25,7 +25,7 @@ jobs:
     - put: alert
       params:
         status: failure                   # required, allowed values: success, failure
-        additionalLink: example.com       # optional, additional link to display next to concourse link
+        additionalLinkFile: src/url.txt   # optional, name of the file that contains an additional link to display next to the concourse link
         additionalLinkName: "Click me!"   # optional, display text for additional link
   plan:
   - task: fail

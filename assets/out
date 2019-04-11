@@ -16,7 +16,7 @@ cat > "${payload}" <&0
 
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 build_status=$(jq -r '(.params.status // null)' < $payload)
-additional_link=$(jq -r '(.params.additionalLink // null)' < $payload)
+additional_link_file=$(jq -r '(.params.additionalLinkFile // null)' < $payload)
 additional_link_name=$(jq -r '(.params.additionalLinkName // null)' < $payload)
 
 case "$build_status" in
@@ -38,10 +38,12 @@ case "$build_status" in
 esac
 
 additional_action=""
-if [[ "${additional_link}" != "null" ]]
+if [[ "${additional_link_file}" != "null" ]]
 then
+  additional_link="$(cat ${additional_link_file})"
+
   if [[ "${additional_link_name}" == "null" ]]; then
-    additional_link_name="Open URL"
+    additional_link_name="Open"
   fi
 
   additional_action="$(cat <<EOF
