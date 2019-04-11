@@ -16,6 +16,8 @@ cat > "${payload}" <&0
 
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 build_status=$(jq -r '(.params.status // null)' < $payload)
+additional_link_file=$(jq -r '(.params.additionalLinkFile // null)' < $payload)
+additional_link_name=$(jq -r '(.params.additionalLinkName // null)' < $payload)
 
 case "$build_status" in
   success)
@@ -34,6 +36,31 @@ case "$build_status" in
     exit 1
     ;;
 esac
+
+additional_action=""
+if [[ "${additional_link_file}" != "null" ]]
+then
+  additional_link="$(cat ${additional_link_file})"
+
+  if [[ "${additional_link_name}" == "null" ]]; then
+    additional_link_name="Open"
+  fi
+
+  additional_action="$(cat <<EOF
+,
+    {
+      "@type": "OpenUri",
+			"name": "${additional_link_name}",
+			"targets": [
+				{
+					"os": "default",
+					"uri": "${additional_link}"
+				}
+			]
+		}
+EOF
+)"
+fi
 
 message_title_link="${ATC_EXTERNAL_URL}/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}"
 
@@ -55,6 +82,7 @@ body="$(cat <<EOF
 				}
 			]
 		}
+		${additional_action}
 	]
 }
 EOF
