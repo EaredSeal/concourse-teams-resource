@@ -8,7 +8,7 @@ resource_types:
 - name: teams-notification
   type: docker-image
   source:
-    repository: nexeck/concourse-teams-resource
+    repository: dhpizza/concourse-to-teams-hook-image
     tag: latest
 
 resources:
@@ -24,7 +24,9 @@ jobs:
     do:
     - put: alert
       params:
-        status: failure
+        status: failure                   # required, allowed values: success, failure
+        additionalLink: example.com       # optional, additional link to display next to concourse link
+        additionalLinkName: "Click me!"   # optional, display text for additional link
   plan:
   - task: fail
     config:
