@@ -2,6 +2,24 @@
 ## Microsoft Teams
 Create a webhook endpoint for a microsoft teams channel
 
+## Param Configuration
+
+* `status`: *Required.* allowed values: success, failure
+* `message`: *Optional.*
+* `activitySubtitle`: *Optional.*
+
+Resolves at runtime Concourse CI environment variables referenced in your Teams
+connector messages such as:
+
+```
+$BUILD_ID
+$BUILD_NAME
+$BUILD_JOB_NAME
+$BUILD_PIPELINE_NAME
+$BUILD_TEAM_NAME
+$ATC_EXTERNAL_URL
+```
+
 ## Pipeline
 ```yaml
 resource_types:

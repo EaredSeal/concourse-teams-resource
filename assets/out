@@ -20,18 +20,20 @@ webhook_url="$(jq -r '.source.url' < "${payload}")"
 build_status=$(jq -r '(.params.status // null)' < $payload)
 additional_link_file=$(jq -r '(.params.additionalLinkFile // null)' < $payload)
 additional_link_name=$(jq -r '(.params.additionalLinkName // null)' < $payload)
+activitySubtitle="$(jq -r '.params.activitySubtitle // ""' < "${payload}")"
+message="$(jq -r '.params.message // ""' < "${payload}")"
 
 case "$build_status" in
   success)
     message_color='00FF00'
     message_summary="${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME}"
-    message_title="👍 Build ${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME} succeeded"
+    message_title="👍 Build ${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME} ($BUILD_NAME) succeeded"
     icon="https://cdnjs.cloudflare.com/ajax/libs/octicons/8.3.0/svg/check.svg"
     ;;
   failure)
     message_color='FF0000'
     message_summary="${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME}"
-    message_title="👎 Build ${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME} failed"
+    message_title="👎 Build ${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME} ($BUILD_NAME) failed"
     icon="https://cdnjs.cloudflare.com/ajax/libs/octicons/8.3.0/svg/x.svg"
     ;;
   *)
@@ -49,7 +51,6 @@ then
   fi
 
   additional_action="$(cat <<EOF
-,
     {
       "@type": "OpenUri",
 			"name": "${additional_link_name}",
@@ -65,6 +66,7 @@ EOF
 fi
 
 message_title_link="${ATC_EXTERNAL_URL}/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}"
+message="${message} <a href=\\\"${message_title_link}\\\">View in Concourse</a>"
 
 body="$(cat <<EOF
 {
@@ -73,17 +75,11 @@ body="$(cat <<EOF
 	"summary": "${message_summary}",
 	"themeColor": "${message_color}",
 	"title": "${message_title}",
+	  "sections": [
+        {"text": "${message}"},
+        {"activitySubtitle": "${activitySubtitle}"}
+    ],
 	"potentialAction": [
-		{
-			"@type": "OpenUri",
-			"name": "View in Concourse",
-			"targets": [
-				{
-					"os": "default",
-					"uri": "${message_title_link}"
-				}
-			]
-		}
 		${additional_action}
 	]
 }
