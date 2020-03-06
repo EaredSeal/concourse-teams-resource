@@ -7,6 +7,7 @@ Create a webhook endpoint for a microsoft teams channel
 * `status`: *Required.* allowed values: success, failure
 * `message`: *Optional.*
 * `activitySubtitle`: *Optional.*
+* `type`: *Optional.* allowed values: deploy, deploying
 
 Resolves at runtime Concourse CI environment variables referenced in your Teams
 connector messages such as:

@@ -18,22 +18,35 @@ cat > "${payload}" <&0
 
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 build_status=$(jq -r '(.params.status // null)' < $payload)
+build_type=$(jq -r '(.params.type // null)' < $payload)
 additional_link_file=$(jq -r '(.params.additionalLinkFile // null)' < $payload)
 additional_link_name=$(jq -r '(.params.additionalLinkName // null)' < $payload)
 activitySubtitle="$(jq -r '.params.activitySubtitle // ""' < "${payload}")"
 message="$(jq -r '.params.message // ""' < "${payload}")"
 
+case "$build_type" in
+	deploy)
+		message_title="Deploy"
+	;;
+	deploying)
+		message_title="Deploying"
+	;;
+	*)
+		message_title="Build"
+    ;;
+esac
+
 case "$build_status" in
   success)
     message_color='00FF00'
     message_summary="${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME}"
-    message_title="👍 Build ${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME} ($BUILD_NAME) succeeded"
+    message_title="👍 ${message_title} ${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME} ($BUILD_NAME) succeeded"
     icon="https://cdnjs.cloudflare.com/ajax/libs/octicons/8.3.0/svg/check.svg"
     ;;
   failure)
     message_color='FF0000'
     message_summary="${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME}"
-    message_title="👎 Build ${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME} ($BUILD_NAME) failed"
+    message_title="👎 ${message_title} ${BUILD_PIPELINE_NAME} - ${BUILD_JOB_NAME} ($BUILD_NAME) failed"
     icon="https://cdnjs.cloudflare.com/ajax/libs/octicons/8.3.0/svg/x.svg"
     ;;
   *)
